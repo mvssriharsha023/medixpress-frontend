@@ -5,11 +5,11 @@ import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const userType = sessionStorage.getItem('userType');
+  const role = sessionStorage.getItem('role');
   const token = sessionStorage.getItem('token');
 
   useEffect(() => {
-    if (token === null || userType != "CUSTOMER") {
+    if (token === null || role != "PHARMACY") {
       navigate("/");
     }
   })

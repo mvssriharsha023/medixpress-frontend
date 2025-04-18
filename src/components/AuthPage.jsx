@@ -42,39 +42,10 @@ const AuthPage = () => {
       </Typography>
 
       {/* Auth Container */}
-      <Paper
-        elevation={8}
-        sx={{
-          width: "100%",
-          maxWidth: 450,
-          padding: 4,
-          borderRadius: 3,
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
-        }}
-      >
-        <Typography variant="h5" align="center" gutterBottom>
-          {isSignIn ? "Sign In" : "Sign Up"}
-        </Typography>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-          <Button
-            variant={isSignIn ? "contained" : "outlined"}
-            onClick={() => setIsSignIn(true)}
-            fullWidth
-          >
-            Sign In
-          </Button>
-          <Button
-            variant={!isSignIn ? "contained" : "outlined"}
-            onClick={() => setIsSignIn(false)}
-            fullWidth
-          >
-            Sign Up
-          </Button>
-        </Box>
+
 
         {isSignIn ? <SignInForm /> : <SignUpForm />}
-      </Paper>
     </Box>
   );
 };

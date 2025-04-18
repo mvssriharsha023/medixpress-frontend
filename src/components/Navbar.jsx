@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const userType = sessionStorage.getItem('userType');
+  const role = sessionStorage.getItem('role');
 
   const handleLogout = () => {
     sessionStorage.clear();
@@ -21,7 +21,7 @@ const Navbar = () => {
         <Box sx={{ display: 'flex', gap: 2 }}>
           
 
-          {userType === 'CUSTOMER' && (
+          {role === 'CUSTOMER' && (
             <>
             <Button color="inherit" onClick={() => navigate('/customer/home')}>Home</Button>
               <Button color="inherit" onClick={() => navigate('/cart')}>My Cart</Button>
@@ -29,7 +29,7 @@ const Navbar = () => {
             </>
           )}
 
-          {userType === 'PHARMACY' && (
+          {role === 'PHARMACY' && (
             <>
             <Button color="inherit" onClick={() => navigate('/pharmacy/home')}>Home</Button>
               <Button color="inherit" onClick={() => navigate('/inventory')}>Manage Inventory</Button>
