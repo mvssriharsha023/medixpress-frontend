@@ -14,12 +14,12 @@ html, body, #root {
   
 /* Works in Chrome, Edge, Safari */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #ffffff; /* White background */
+  background: #9deef1; /* White background */
 }
 
 ::-webkit-scrollbar-thumb {
@@ -35,6 +35,6 @@ html, body, #root {
 
 /* Firefox Support */
 * {
-  scrollbar-width: auto;
+  scrollbar-width: '12px';
   scrollbar-color: #00bfff #ffffff;
 }

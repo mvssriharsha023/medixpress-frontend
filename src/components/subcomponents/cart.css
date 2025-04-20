@@ -1,0 +1,231 @@
+/* Glass Effect Container */
+.glass-container {
+  background: rgba(255, 255, 255, 0.15); /* Transparent white */
+  backdrop-filter: blur(10px); /* Glass blur effect */
+  -webkit-backdrop-filter: blur(10px); /* Support for Safari */
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem auto;
+  margin-top: 6%;
+  max-width: 1200px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Cart Wrapper */
+.cart-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Main Heading */
+.main-heading {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 10px 0;
+}
+
+/* Empty Cart */
+.empty-cart-container {
+  display: flex;
+  width: max;
+  height: max;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  background: rgba(255, 255, 255, 0.1); /* Transparent background */
+  backdrop-filter: blur(10px); /* Glass blur effect */
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+/* Empty Cart Message */
+.empty-cart {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.8); /* Slightly opaque background */
+  backdrop-filter: blur(5px);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty Cart Icon */
+.empty-cart-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+}
+
+/* Empty Cart Heading */
+.empty-cart h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Empty Cart Sub Heading */
+.empty-cart p {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Browse Button */
+.browse-products-btn {
+  padding: 12px 30px;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.browse-products-btn:hover {
+  background-color: #45a049;
+}
+
+/* Cart Content */
+.cart-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Cart Items Section */
+.cart-items-section {
+  flex: 2;
+  width: 100%;
+}
+
+/* Cart Item */
+.cart-item {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Item Info */
+.item-info {
+  display: flex;
+  gap: 15px;
+}
+
+.item-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.item-dose {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* Item Quantity */
+.item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.qty-btn:hover {
+  background-color: #45a049;
+}
+
+/* Item Price */
+.item-price {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 30px;
+}
+
+/* Remove Button */
+.remove-btn {
+  background-color: red;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  height: 40px;
+}
+
+.remove-btn:hover {
+  background-color: darkred;
+}
+
+/* Order Summary */
+.order-summary {
+  flex: 1;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.order-summary h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.summary-total {
+  font-weight: 600;
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+}
+
+.delivery-time {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.checkout-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.checkout-btn:hover {
+  background-color: #45a049;
+}
