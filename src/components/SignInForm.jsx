@@ -78,7 +78,7 @@ const SignInForm = () => {
     
     console.log('Login Request:', loginRequest);
     sessionStorage.setItem("token", "abcdefgh");
-    sessionStorage.setItem("role", "PHARMACY");
+    sessionStorage.setItem("role", "CUSTOMER");
     if (sessionStorage.getItem("role") === "CUSTOMER") {
       navigate('/customer/home');
     }
