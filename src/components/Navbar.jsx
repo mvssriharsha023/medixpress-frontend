@@ -1,12 +1,12 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import medicineIcon from './medicine.png';
 
 const GlassAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'rgba(6, 32, 106, 0.25)',
+  background:  'rgba(26, 205, 233, 0.45)',
   backdropFilter: 'blur(16px) saturate(180%)',
   WebkitBackdropFilter: 'blur(16px) saturate(180%)',
   borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
@@ -53,9 +53,9 @@ const LogoText = styled(Typography)(({ theme }) => ({
   textShadow: '0 2px 4px rgba(0,0,0,0.1)',
 }));
 
-const NavButton = styled(Button)(({ theme }) => ({
+const NavButton = styled(Button)(({ theme, active }) => ({
   height: '100%',
-  color: 'rgba(3, 10, 89, 0.95)',
+  color: active ? 'white' : 'rgba(3, 10, 89, 0.95)',
   margin: theme.spacing(0, 1),
   padding: theme.spacing(1, 3),
   position: 'relative',
@@ -65,6 +65,7 @@ const NavButton = styled(Button)(({ theme }) => ({
   fontSize: '1.1rem',
   fontWeight: 700,
   minWidth: '120px',
+  background: active ? 'linear-gradient(90deg, rgba(7, 82, 107, 0.25) 0%, rgba(11, 148, 155, 0.25) 100%)' : 'transparent',
   '&:before': {
     content: '""',
     position: 'absolute',
@@ -79,12 +80,13 @@ const NavButton = styled(Button)(({ theme }) => ({
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: '0 8px 28px rgba(79, 172, 254, 0.3)',
-    color: '#fff',
+    color: 'white',
     '&:before': {
       transform: 'translateY(0)',
     },
   },
   '&:active': {
+    background: 'linear-gradient(90deg, rgba(7, 82, 107, 0.25) 0%, rgba(11, 148, 155, 0.25) 100%)',
     transform: 'translateY(0) scale(0.96)',
   },
 }));
@@ -140,6 +142,7 @@ const LogoutButton = styled(Button)(({ theme }) => ({
   },
   '&:active': {
     transform: 'translateY(0) scale(0.96)',
+    background: 'linear-gradient(90deg, rgba(7, 82, 107, 0.25) 0%, rgba(11, 148, 155, 0.25) 100%)',
   },
   '& .MuiSvgIcon-root': {
     transition: 'transform 0.3s ease',
@@ -149,6 +152,7 @@ const LogoutButton = styled(Button)(({ theme }) => ({
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const role = sessionStorage.getItem('role');
 
   const handleLogout = () => {
@@ -180,17 +184,17 @@ const Navbar = () => {
         <NavButtonGroup>
           {role === 'CUSTOMER' && (
             <>
-              <NavButton onClick={() => navigate('/customer/home')}>Home</NavButton>
-              <NavButton onClick={() => navigate('/customer/mycart')}>My Cart</NavButton>
-              <NavButton onClick={() => navigate('/customer/myorderhistory')}>Orders</NavButton>
+              <NavButton active={location.pathname === '/customer/home'} onClick={() => navigate('/customer/home')}>Home</NavButton>
+              <NavButton active={location.pathname === '/customer/mycart'} onClick={() => navigate('/customer/mycart')}>My Cart</NavButton>
+              <NavButton active={location.pathname === '/customer/myorderhistory'} onClick={() => navigate('/customer/myorderhistory')}>Orders</NavButton>
             </>
           )}
 
           {role === 'PHARMACY' && (
             <>
-              <NavButton onClick={() => navigate('/pharmacy/home')}>Home</NavButton>
-              <NavButton onClick={() => navigate('/pharmacy/inventory')}>Inventory</NavButton>
-              <NavButton onClick={() => navigate('/pharmacy/orders')}>Orders</NavButton>
+              <NavButton active={location.pathname === '/pharmacy/home'} onClick={() => navigate('/pharmacy/home')}>Home</NavButton>
+              <NavButton active={location.pathname === '/pharmacy/inventory'} onClick={() => navigate('/pharmacy/inventory')}>Inventory</NavButton>
+              <NavButton active={location.pathname === '/pharmacy/orders'} onClick={() => navigate('/pharmacy/orders')}>Orders</NavButton>
             </>
           )}
         </NavButtonGroup>
