@@ -52,6 +52,7 @@ const CustomerHomePage = () => {
         <div
           style={{
             marginTop: '30px',
+            marginBottom: '50px',
             width: '70%',
             // Glass effect using rgba with backdrop-filter for blur
             backgroundColor: 'rgba(26, 205, 233, 0.45)',
