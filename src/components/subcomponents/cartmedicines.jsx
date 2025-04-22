@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 import "./cart.css";
-import emptyCartIcon from "./emptyCartIcon.png"; // Path to your empty cart image
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([
@@ -10,15 +8,16 @@ const Cart = () => {
     { name: "Lisinopril 20mg Tablet", quantity: 1, price: 5.25, dose: "20 mg" }
   ]);
 
-  const navigate = useNavigate(); // Initialize useNavigate hook
-
-  const updateQuantity = (index, delta) => {
+  // Modified to prevent double updates
+  const updateQuantity = React.useCallback((index, delta) => {
     setCartItems(prev => {
-      const updated = [...prev];
-      updated[index].quantity = Math.max(1, updated[index].quantity + delta); // Ensure quantity never goes below 1
-      return updated;
+      return prev.map((item, i) => 
+        i === index 
+          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+          : item
+      );
     });
-  };
+  }, []);
 
   const removeItem = (index) => {
     setCartItems(prev => prev.filter((_, i) => i !== index));
@@ -29,24 +28,14 @@ const Cart = () => {
   const taxes = parseFloat((subtotal * 0.05).toFixed(2));
   const total = (subtotal + delivery + taxes).toFixed(2);
 
-  // Navigate to home page when the "Browse Products" button is clicked
-  const handleBrowseProducts = () => {
-    navigate("/customer/home"); // Redirect to the home page (adjust the path if needed)
-  };
-
   return (
     <div className="glass-container">
       <div className="cart-wrapper">
         <h1 className="main-heading">Your Cart</h1>
-
         {cartItems.length === 0 ? (
-          <div className="empty-cart-container">
-            <div className="empty-cart">
-              <img src={emptyCartIcon} alt="Empty Cart" className="empty-cart-icon" />
-              <h2>Your cart is empty</h2>
-              <p>Add some items to get started!</p>
-              <button className="browse-products-btn" onClick={handleBrowseProducts}>Browse Products</button>
-            </div>
+          <div className="empty-cart">
+            <h2>Your cart is empty</h2>
+            <p>Add some items to get started!</p>
           </div>
         ) : (
           <div className="cart-content">
@@ -61,9 +50,25 @@ const Cart = () => {
                     </div>
                   </div>
                   <div className="item-quantity">
-                    <button className="qty-btn" onClick={() => updateQuantity(index, -1)}>-</button>
+                    <button 
+                      className="qty-btn" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(index, -1);
+                      }}
+                    >
+                      -
+                    </button>
                     <span>{item.quantity}</span>
-                    <button className="qty-btn" onClick={() => updateQuantity(index, 1)}>+</button>
+                    <button 
+                      className="qty-btn" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateQuantity(index, 1);
+                      }}
+                    >
+                      +
+                    </button>
                   </div>
                   <div className="item-price">${(item.quantity * item.price).toFixed(2)}</div>
                   <button className="remove-btn" onClick={() => removeItem(index)}>Remove</button>
