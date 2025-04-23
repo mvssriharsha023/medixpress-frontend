@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Navbar from '../Navbar';
 import { useNavigate } from 'react-router-dom';
 
-const PharmacyHomePage = () => {
+const PharmacyInventory = () => {
   const navigate = useNavigate();
   const role = sessionStorage.getItem('role');
   const token = sessionStorage.getItem('token');
@@ -11,13 +11,11 @@ const PharmacyHomePage = () => {
     if (token === null || role !== "PHARMACY") {
       navigate("/");
     }
-  }) 
+  })
   return (
     <>
       <Navbar />
-
     </>
   );
 };
-
-export default PharmacyHomePage;
+export default PharmacyInventory;
