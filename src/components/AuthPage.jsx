@@ -1,5 +1,6 @@
+// AuthPage.jsx
 import React, { useState } from "react";
-import { Box, Paper, Typography, Button } from "@mui/material";
+import { Box, Paper, Typography, Link } from "@mui/material";
 import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 
@@ -14,12 +15,10 @@ const AuthPage = () => {
         left: 0,
         width: "100vw",
         height: "100vh",
-        overflow: "hidden",
         backgroundImage:
-          'url("https://plus.unsplash.com/premium_photo-1668487827029-2bd54133c303?q=80&w=2012&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
+          'url("https://plus.unsplash.com/premium_photo-1668487827029-2bd54133c303?q=80&w=2012")',
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -27,21 +26,19 @@ const AuthPage = () => {
         px: 2,
       }}
     >
-      {/* Title Above Container */}
       <Typography
         variant="h3"
         sx={{
-          color: "#004080", // Deep blue, suits medical theme
+          color: "#004080",
           fontWeight: "bold",
           textAlign: "center",
-          textShadow: "1px 1px 3px rgba(255,255,255,0.5)", // subtle glow for clarity
+          textShadow: "1px 1px 3px rgba(255,255,255,0.5)",
           mb: 4,
         }}
       >
         Welcome To MediXpress!
       </Typography>
 
-      {/* Auth Container */}
       <Paper
         elevation={8}
         sx={{
@@ -56,24 +53,27 @@ const AuthPage = () => {
           {isSignIn ? "Sign In" : "Sign Up"}
         </Typography>
 
-        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-          <Button
-            variant={isSignIn ? "contained" : "outlined"}
-            onClick={() => setIsSignIn(true)}
-            fullWidth
-          >
-            Sign In
-          </Button>
-          <Button
-            variant={!isSignIn ? "contained" : "outlined"}
-            onClick={() => setIsSignIn(false)}
-            fullWidth
-          >
-            Sign Up
-          </Button>
-        </Box>
-
-        {isSignIn ? <SignInForm /> : <SignUpForm />}
+        {isSignIn ? (
+          <>
+            <SignInForm />
+            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+              Don't have an account?{" "}
+              <Link component="button" onClick={() => setIsSignIn(false)}>
+                Sign up
+              </Link>
+            </Typography>
+          </>
+        ) : (
+          <>
+            <SignUpForm onRegistrationSuccess={() => setIsSignIn(true)}/>
+            <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+              Already have an account?{" "}
+              <Link component="button" onClick={() => setIsSignIn(true)}>
+                Sign in
+              </Link>
+            </Typography>
+          </>
+        )}
       </Paper>
     </Box>
   );
