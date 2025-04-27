@@ -155,7 +155,7 @@ const OrderPage = () => {
                 )}
 
                 {order.status === "CANCELLED" && (
-                  <Button variant="contained" color="error" disabled>
+                  <Button variant="contained" color="error">
                     Cancelled
                   </Button>
                 )}
@@ -171,7 +171,7 @@ const OrderPage = () => {
                 )}
 
                 {order.status === "DELIVERED" && (
-                  <Button variant="contained" color="success" disabled>
+                  <Button variant="contained" color="success">
                     Delivered
                   </Button>
                 )}

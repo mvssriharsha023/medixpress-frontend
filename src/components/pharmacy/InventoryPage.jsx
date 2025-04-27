@@ -19,7 +19,8 @@ const InventoryPage = () => {
   const token = sessionStorage.getItem("token");
   const role = sessionStorage.getItem("role");
 
-  const { getUserByToken, getMedicinesByPharmacy, addMedicine, reduceMedicineQuantity } = useContext(GlobalContext);
+  const { getUserByToken, getMedicinesByPharmacy, addMedicine, reduceMedicineQuantity, updatePrice } = useContext(GlobalContext);
+
   const [medicines, setMedicines] = useState([]);
   const [user, setUser] = useState({});
 
@@ -37,6 +38,11 @@ const InventoryPage = () => {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [actionType, setActionType] = useState("");
   const [quantityInput, setQuantityInput] = useState("");
+
+  const [openUpdatePriceModal, setOpenUpdatePriceModal] = useState(false);
+  const [selectedMedicineForPrice, setSelectedMedicineForPrice] = useState(null);
+  const [newPrice, setNewPrice] = useState("");
+  const [priceError, setPriceError] = useState("");
 
   const fetchInitialData = async () => {
     const user = await getUserByToken(token);
@@ -150,6 +156,41 @@ const InventoryPage = () => {
     handleCloseQuantityModal();
   };
 
+  const handleUpdatePriceClick = (medicine) => {
+    setSelectedMedicineForPrice(medicine);
+    setNewPrice("");
+    setPriceError("");
+    setOpenUpdatePriceModal(true);
+  };
+
+  const handleCloseUpdatePriceModal = () => {
+    setOpenUpdatePriceModal(false);
+    setSelectedMedicineForPrice(null);
+    setNewPrice("");
+    setPriceError("");
+  };
+
+  const handleNewPriceChange = (e) => {
+    setNewPrice(e.target.value);
+    setPriceError("");
+  };
+
+  const handleUpdatePriceSubmit = async () => {
+    if (!newPrice) {
+      setPriceError("Price is required.");
+      return;
+    }
+    const parsedPrice = parseFloat(newPrice);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      setPriceError("Please enter a valid positive number.");
+      return;
+    }
+    await updatePrice(selectedMedicineForPrice.id, parsedPrice);
+    const updatedMedicines = await getMedicinesByPharmacy(user.id);
+    setMedicines(updatedMedicines || []);
+    handleCloseUpdatePriceModal();
+  };
+
   return (
     <div>
       <Navbar />
@@ -191,6 +232,7 @@ const InventoryPage = () => {
                         variant="contained"
                         color="success"
                         size="small"
+                        fullWidth
                         onClick={() => handleOpenQuantityModal(medicine, "add")}
                       >
                         Add
@@ -199,17 +241,30 @@ const InventoryPage = () => {
                         variant="contained"
                         color="error"
                         size="small"
+                        fullWidth
                         onClick={() => handleOpenQuantityModal(medicine, "reduce")}
                       >
                         Reduce
                       </Button>
                     </Box>
+
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      size="small"
+                      fullWidth
+                      sx={{ mt: 1 }}
+                      onClick={() => handleUpdatePriceClick(medicine)}
+                    >
+                      Update Price
+                    </Button>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
         </Grid>
 
+        {/* Add Medicine Modal */}
         <Modal
           open={openAddMedicineModal}
           onClose={handleCloseAddMedicineModal}
@@ -262,7 +317,6 @@ const InventoryPage = () => {
               helperText={errors.quantity || quantityError}
               sx={{ mb: 3 }}
             />
-
             <Button
               variant="contained"
               color="primary"
@@ -280,6 +334,7 @@ const InventoryPage = () => {
           </Box>
         </Modal>
 
+        {/* Quantity Modal */}
         <Modal
           open={openQuantityModal}
           onClose={handleCloseQuantityModal}
@@ -338,6 +393,57 @@ const InventoryPage = () => {
             )}
           </Box>
         </Modal>
+
+        {/* Update Price Modal */}
+        <Modal
+          open={openUpdatePriceModal}
+          onClose={handleCloseUpdatePriceModal}
+          aria-labelledby="update-price-modal"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Box
+            sx={{
+              bgcolor: "background.paper",
+              p: 4,
+              borderRadius: 3,
+              width: 400,
+              boxShadow: 24,
+            }}
+          >
+            {selectedMedicineForPrice && (
+              <>
+                <Typography id="update-price-modal" variant="h6" mb={3}>
+                  Update Price
+                </Typography>
+                <Typography variant="subtitle1" mb={2}>
+                  Medicine: {selectedMedicineForPrice.name}
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="New Price"
+                  value={newPrice}
+                  onChange={handleNewPriceChange}
+                  error={!!priceError}
+                  helperText={priceError}
+                  sx={{ mb: 3 }}
+                />
+                <Button
+                  variant="contained"
+                  color="warning"
+                  fullWidth
+                  onClick={handleUpdatePriceSubmit}
+                >
+                  Update Price
+                </Button>
+              </>
+            )}
+          </Box>
+        </Modal>
+
       </Box>
     </div>
   );

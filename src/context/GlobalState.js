@@ -382,6 +382,27 @@ const GlobalState = (props) => {
     }
   };
 
+  const updatePrice = async (medicineId, price) => {
+    try {
+      if (typeof price !== "number" && price <= 0) {
+        showSnackbar("Price must be a positive number", "error");
+        return;
+      }
+      const response = await fetch(`http://localhost:8080/medicine-service/api/medicines/changePrice/${medicineId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: price,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update medicine price");
+      }
+    } catch (error) {
+      showSnackbar("Failed to update medicine price. Please try again later.", "error");
+    }
+  }
+
   return (
     <GlobalContext.Provider
       value={{
@@ -405,6 +426,7 @@ const GlobalState = (props) => {
         getOrdersByPharmacy,
         addMedicine,
         reduceMedicineQuantity,
+        updatePrice
       }}
     >
       {props.children}
