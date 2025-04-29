@@ -8,6 +8,7 @@ import {
   Typography,
   Stack,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import Navbar from "../Navbar";
 import GlobalContext from "../../context/GlobalContext";
@@ -48,6 +49,7 @@ const PharmacyOrderPage = () => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [orderToConfirm, setOrderToConfirm] = useState(null);
+  const [loading, setLoading] = useState(false); // ✅ Added loading state
 
   const fetchInitialData = async () => {
     const data = await getOrdersByPharmacy();
@@ -96,15 +98,21 @@ const PharmacyOrderPage = () => {
 
   const handleConfirmYes = async () => {
     if (orderToConfirm) {
-      await checkOutForDelivery(orderToConfirm.id);
-      setOrders((prevOrders) =>
-        prevOrders.map((o) =>
-          o.id === orderToConfirm.id ? { ...o, status: "OUT_OF_DELIVERY" } : o
-        )
-      );
+      setLoading(true); // ✅ Start loading
+      try {
+        await checkOutForDelivery(orderToConfirm.id);
+        setOrders((prevOrders) =>
+          prevOrders.map((o) =>
+            o.id === orderToConfirm.id ? { ...o, status: "OUT_OF_DELIVERY" } : o
+          )
+        );
+      } catch (err) {
+        console.error("Error during checkout:", err);
+      }
+      setLoading(false); // ✅ Stop loading
+      setConfirmOpen(false);
+      setOrderToConfirm(null);
     }
-    setConfirmOpen(false);
-    setOrderToConfirm(null);
   };
 
   const handleConfirmNo = () => {
@@ -227,7 +235,6 @@ const PharmacyOrderPage = () => {
             <Typography>No items found in this order.</Typography>
           )}
 
-          {/* Total Price */}
           {selectedOrder && (
             <Box sx={{ textAlign: "right", mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -236,7 +243,6 @@ const PharmacyOrderPage = () => {
             </Box>
           )}
 
-          {/* Close Button */}
           <Box sx={{ textAlign: "right", mt: 2 }}>
             <Button variant="outlined" onClick={handleClose}>
               Close
@@ -248,17 +254,25 @@ const PharmacyOrderPage = () => {
       {/* Confirmation Modal */}
       <Modal open={confirmOpen} onClose={handleConfirmNo}>
         <Box sx={confirmModalStyle}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Are you sure you want to Check Out this order for delivery?
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
-            <Button variant="contained" color="primary" onClick={handleConfirmYes}>
-              Yes
-            </Button>
-            <Button variant="outlined" color="secondary" onClick={handleConfirmNo}>
-              No
-            </Button>
-          </Stack>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Are you sure you want to Check Out this order for delivery?
+              </Typography>
+              <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+                <Button variant="contained" color="primary" onClick={handleConfirmYes}>
+                  Yes
+                </Button>
+                <Button variant="outlined" color="secondary" onClick={handleConfirmNo}>
+                  No
+                </Button>
+              </Stack>
+            </>
+          )}
         </Box>
       </Modal>
     </>

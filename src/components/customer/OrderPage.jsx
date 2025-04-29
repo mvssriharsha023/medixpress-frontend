@@ -8,6 +8,7 @@ import {
   Typography,
   Stack,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import Navbar from "../Navbar";
 import GlobalContext from "../../context/GlobalContext";
@@ -38,6 +39,7 @@ const OrderPage = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [confirmMessage, setConfirmMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -107,6 +109,17 @@ const OrderPage = () => {
       setConfirmMessage("Have you received your order?");
     }
     setConfirmOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    if (confirmAction === "CANCEL") {
+      await handleCancelOrder(selectedOrderId);
+    } else if (confirmAction === "RECEIVE") {
+      await handleReceivedOrder(selectedOrderId);
+    }
+    setLoading(false);
+    setConfirmOpen(false);
   };
 
   return (
@@ -220,7 +233,6 @@ const OrderPage = () => {
             <Typography>No items found in this order.</Typography>
           )}
 
-          {/* --- Total Price --- */}
           {selectedOrder && (
             <Box sx={{ textAlign: "right", mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -229,7 +241,6 @@ const OrderPage = () => {
             </Box>
           )}
 
-          {/* --- Close Button --- */}
           <Box sx={{ textAlign: "right", mt: 2 }}>
             <Button variant="outlined" onClick={handleClose}>
               Close
@@ -259,21 +270,16 @@ const OrderPage = () => {
             <Button
               variant="contained"
               color="success"
-              onClick={async () => {
-                if (confirmAction === "CANCEL") {
-                  await handleCancelOrder(selectedOrderId);
-                } else if (confirmAction === "RECEIVE") {
-                  await handleReceivedOrder(selectedOrderId);
-                }
-                setConfirmOpen(false);
-              }}
+              onClick={handleConfirm}
+              disabled={loading}
             >
-              Yes
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Yes"}
             </Button>
             <Button
               variant="outlined"
               color="error"
               onClick={() => setConfirmOpen(false)}
+              disabled={loading}
             >
               No
             </Button>
