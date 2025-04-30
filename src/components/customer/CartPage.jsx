@@ -11,15 +11,16 @@ import {
   Alert,
   Backdrop,
   CircularProgress,
+  Dialog,
+  DialogContent,
 } from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import GlobalContext from "../../context/GlobalContext";
 import { useNavigate } from "react-router-dom";
 
-// CartPage: Displays the customer's cart, allows item removal, cart clearing, and order placement
 const CartPage = () => {
   const navigate = useNavigate();
 
-  // Accessing global context methods for cart and order management
   const {
     getUserCart,
     getUserById,
@@ -29,24 +30,16 @@ const CartPage = () => {
     placeOrder,
   } = useContext(GlobalContext);
 
-  // Local state to store enriched cart items
   const [cart, setCart] = useState([]);
-
-  // Stores the final calculated price of the entire cart
   const [finalPrice, setFinalPrice] = useState(0);
-
-  // Controls loading spinner during async operations
   const [loading, setLoading] = useState(false);
-
-  // Controls snackbar for showing feedback messages to the user
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
 
-  // Memoizing fetchInitialData to avoid unnecessary re-renders
   const fetchInitialData = useCallback(async () => {
     const cartData = await getUserCart();
     let total = 0;
 
-    // Add pharmacy and medicine names to each cart item
     const enhancedCartItems = await Promise.all(
       cartData.map(async (item) => {
         const pharmacy = await getUserById(item.pharmacyId);
@@ -68,7 +61,6 @@ const CartPage = () => {
     setFinalPrice(total);
   }, [getUserCart, getUserById, getMedicineById]);
 
-  // On component mount, verify authentication and fetch cart data
   useEffect(() => {
     if (sessionStorage.getItem("role") !== "CUSTOMER" || !sessionStorage.getItem("token")) {
       navigate("/");
@@ -76,14 +68,12 @@ const CartPage = () => {
     fetchInitialData();
   }, [navigate, fetchInitialData]);
 
-  // Close the snackbar after auto-hide duration
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
   return (
     <div>
-      {/* Navbar for the top of the page */}
       <Navbar />
 
       <Box sx={{ p: 4 }}>
@@ -91,14 +81,12 @@ const CartPage = () => {
           My Cart
         </Typography>
 
-        {/* If cart is empty, show message */}
         {cart.length === 0 ? (
           <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
             No Medicines in Cart
           </Typography>
         ) : (
           <>
-            {/* Clear cart button */}
             <Button
               variant="outlined"
               color="error"
@@ -113,7 +101,6 @@ const CartPage = () => {
               Clear Cart
             </Button>
 
-            {/* Cart items displayed in a grid */}
             <Box sx={{ width: "100%", px: 2 }}>
               <Grid container spacing={2}>
                 {cart.map((item, index) => (
@@ -134,7 +121,6 @@ const CartPage = () => {
                           Total Price: ₹{item.totalPrice}
                         </Typography>
 
-                        {/* Button to remove individual item from cart */}
                         <Button
                           variant="contained"
                           color="error"
@@ -160,7 +146,6 @@ const CartPage = () => {
               </Grid>
             </Box>
 
-            {/* Cart Summary and Checkout */}
             <Box sx={{ mt: 4 }}>
               <Typography variant="h5" sx={{ fontWeight: 600 }}>
                 Cart Summary
@@ -169,7 +154,6 @@ const CartPage = () => {
                 Final Price: ₹{finalPrice}
               </Typography>
 
-              {/* Checkout button */}
               <Button
                 variant="contained"
                 color="primary"
@@ -183,8 +167,11 @@ const CartPage = () => {
                   setLoading(true);
                   try {
                     await placeOrder();
-                    setSnackbar({ open: true, message: "Order placed successfully!", severity: "success" });
-                    navigate("/customer/order");
+                    setSuccessDialogOpen(true);
+                    setTimeout(() => {
+                      setSuccessDialogOpen(false);
+                      navigate("/customer/order");
+                    }, 2000);
                   } catch (err) {
                     setSnackbar({ open: true, message: "Failed to place order!", severity: "error" });
                   } finally {
@@ -199,7 +186,6 @@ const CartPage = () => {
         )}
       </Box>
 
-      {/* Snackbar for alerts and feedback */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -211,10 +197,19 @@ const CartPage = () => {
         </Alert>
       </Snackbar>
 
-      {/* Backdrop spinner for loading state */}
       <Backdrop open={loading} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      {/* Success Dialog */}
+      <Dialog open={successDialogOpen} PaperProps={{ sx: { borderRadius: 3, textAlign: 'center', p: 3 } }}>
+        <DialogContent>
+          <CheckCircleOutlineIcon sx={{ fontSize: 60, color: "green" }} />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Order Placed Successfully!
+          </Typography>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
