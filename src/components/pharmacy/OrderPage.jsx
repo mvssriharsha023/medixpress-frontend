@@ -49,7 +49,7 @@ const PharmacyOrderPage = () => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [orderToConfirm, setOrderToConfirm] = useState(null);
-  const [loading, setLoading] = useState(false); // ✅ Added loading state
+  const [loading, setLoading] = useState(false);
 
   const fetchInitialData = async () => {
     const data = await getOrdersByPharmacy();
@@ -74,7 +74,13 @@ const PharmacyOrderPage = () => {
         };
       })
     );
-    setOrders(enrichedOrders);
+
+    // Sort by orderDateTime in descending order (latest first)
+    const sortedOrders = enrichedOrders.sort(
+      (a, b) => new Date(b.orderDateTime) - new Date(a.orderDateTime)
+    );
+
+    setOrders(sortedOrders);
   };
 
   useEffect(() => {
@@ -98,7 +104,7 @@ const PharmacyOrderPage = () => {
 
   const handleConfirmYes = async () => {
     if (orderToConfirm) {
-      setLoading(true); // ✅ Start loading
+      setLoading(true);
       try {
         await checkOutForDelivery(orderToConfirm.id);
         setOrders((prevOrders) =>
@@ -109,7 +115,7 @@ const PharmacyOrderPage = () => {
       } catch (err) {
         console.error("Error during checkout:", err);
       }
-      setLoading(false); // ✅ Stop loading
+      setLoading(false);
       setConfirmOpen(false);
       setOrderToConfirm(null);
     }
@@ -130,13 +136,7 @@ const PharmacyOrderPage = () => {
 
         <Stack spacing={2}>
           {orders.map((order) => (
-            <Card
-              key={order.id}
-              sx={{
-                p: 2,
-                boxShadow: 3,
-              }}
-            >
+            <Card key={order.id} sx={{ p: 2, boxShadow: 3 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
                 <Box sx={{ flex: "1 1 60%" }}>
                   <Typography variant="h6">
@@ -208,12 +208,7 @@ const PharmacyOrderPage = () => {
             selectedOrder.items.map((item) => (
               <Card
                 key={item.id}
-                sx={{
-                  mb: 2,
-                  p: 2,
-                  backgroundColor: "#f9f9f9",
-                  boxShadow: 2,
-                }}
+                sx={{ mb: 2, p: 2, backgroundColor: "#f9f9f9", boxShadow: 2 }}
               >
                 <CardContent>
                   <Typography variant="h6">

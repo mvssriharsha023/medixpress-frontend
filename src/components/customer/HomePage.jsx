@@ -29,6 +29,8 @@ const HomePage = () => {
   const [medicines, setMedicines] = useState([]);
   const [medicineSearch, setMedicineSearch] = useState("");
   const [medicineNames, setMedicineNames] = useState([]);
+  const [pharmacyNames, setPharmacyNames] = useState([]);
+  const [pharmacyFilter, setPharmacyFilter] = useState([]);
   const [cartMap, setCartMap] = useState({});
 
   const navigate = useNavigate();
@@ -57,7 +59,10 @@ const HomePage = () => {
     const data = await searchMedicines(medicineSearch);
     setMedicines(data);
     const uniqueNames = [...new Set(data.map((med) => med.name))];
+    const uniquePharmacies = [...new Set(data.map((med) => med.pharmacyName))];
     setMedicineNames(uniqueNames);
+    setPharmacyNames(uniquePharmacies);
+    setPharmacyFilter(uniquePharmacies); // initially select all
   };
 
   const handleSearch = () => {
@@ -71,7 +76,6 @@ const HomePage = () => {
 
   const handleAddToCart = async (pharmacyId, medicineId) => {
     const addedItem = await addToCart(pharmacyId, medicineId, 1);
-    console.log(addedItem);
     if (addedItem) {
       setCartMap((prev) => ({
         ...prev,
@@ -95,25 +99,26 @@ const HomePage = () => {
       return;
     }
 
-    if (newQty == 0) {
-      // If quantity hits 0, remove it from cartMap
+    if (newQty === 0) {
       setCartMap((prev) => {
         const updated = { ...prev };
         delete updated[medicineId];
         return updated;
       });
       removeItemFromCart(cartId);
-      // TODO: add removeFromCart API
     } else {
-      // For now, simulate update by just changing state
       setCartMap((prev) => ({
         ...prev,
         [medicineId]: { ...current, quantity: newQty },
       }));
       updateQuantityInCart(cartId, newQty);
-      // TODO: call updateQuantity API
     }
   };
+
+  // Filter medicines by selected pharmacy names
+  const filteredMedicines = medicines.filter((medicine) =>
+    pharmacyFilter.includes(medicine.pharmacyName)
+  );
 
   return (
     <>
@@ -132,7 +137,6 @@ const HomePage = () => {
             }
             options={medicineNames}
             sx={{ flex: 1 }}
-            // freeSolo
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -142,7 +146,6 @@ const HomePage = () => {
               />
             )}
           />
-
           <Button
             variant="contained"
             onClick={handleSearch}
@@ -152,13 +155,59 @@ const HomePage = () => {
           </Button>
         </Stack>
 
+        {/* Pharmacy Filter Dropdown with Select/Deselect All */}
+        <Box sx={{ mt: 3 }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems="center"
+          >
+            <Autocomplete
+              multiple
+              options={pharmacyNames}
+              value={pharmacyFilter}
+              onChange={(event, newValue) => {
+                setPharmacyFilter(newValue);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Filter by Pharmacy"
+                  placeholder="Select Pharmacies"
+                />
+              )}
+              disableCloseOnSelect
+              sx={{ flex: 1 }}
+            />
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setPharmacyFilter([])}
+              disabled={pharmacyFilter.length === 0}
+              sx={{ height: "56px", whiteSpace: "nowrap" }}
+            >
+              Deselect All
+            </Button>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setPharmacyFilter(pharmacyNames)}
+              disabled={pharmacyFilter.length === pharmacyNames.length}
+              sx={{ height: "56px", whiteSpace: "nowrap" }}
+            >
+              Select All
+            </Button>
+          </Stack>
+        </Box>
+
         <Grid container spacing={3} sx={{ mt: 3 }}>
-          {medicines.length === 0 ? (
+          {filteredMedicines.length === 0 ? (
             <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
               No Medicines Found
             </Typography>
           ) : (
-            medicines.map((medicine) => {
+            filteredMedicines.map((medicine) => {
               const inCart = cartMap[medicine.id];
               return (
                 <Grid item xs={12} sm={6} md={3} key={medicine.id}>

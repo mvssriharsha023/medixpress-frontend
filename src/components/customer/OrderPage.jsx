@@ -28,13 +28,17 @@ const modalStyle = {
 };
 
 const OrderPage = () => {
-  const { getOrderHistory, getMedicineById, getUserById, cancelOrder, receiveOrder } =
-    useContext(GlobalContext);
+  const {
+    getOrderHistory,
+    getMedicineById,
+    getUserById,
+    cancelOrder,
+    receiveOrder,
+  } = useContext(GlobalContext);
 
   const [orders, setOrders] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -45,25 +49,29 @@ const OrderPage = () => {
     const fetchOrders = async () => {
       const data = await getOrderHistory();
 
-      const enrichedOrders = await Promise.all(
-        (Array.isArray(data) ? data : []).map(async (order) => {
-          const pharmacy = await getUserById(order.pharmacyId);
-          const enrichedItems = await Promise.all(
-            order.items.map(async (item) => {
-              const medicine = await getMedicineById(item.medicineId);
-              return {
-                ...item,
-                medicineName: medicine?.name || "Unknown",
-              };
-            })
-          );
+      const enrichedOrders = (
+        await Promise.all(
+          (Array.isArray(data) ? data : []).map(async (order) => {
+            const pharmacy = await getUserById(order.pharmacyId);
+            const enrichedItems = await Promise.all(
+              order.items.map(async (item) => {
+                const medicine = await getMedicineById(item.medicineId);
+                return {
+                  ...item,
+                  medicineName: medicine?.name || "Unknown",
+                };
+              })
+            );
 
-          return {
-            ...order,
-            pharmacyName: pharmacy.name,
-            items: enrichedItems,
-          };
-        })
+            return {
+              ...order,
+              pharmacyName: pharmacy.name,
+              items: enrichedItems,
+            };
+          })
+        )
+      ).sort(
+        (a, b) => new Date(b.orderDateTime) - new Date(a.orderDateTime)
       );
 
       setOrders(enrichedOrders);
@@ -147,9 +155,13 @@ const OrderPage = () => {
                   Order #{order.id.slice(-4)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Status: {order.status === 'OUT_OF_DELIVERY' ? 'OUT OF DELIVERY' : order.status} | Total: ₹{order.totalAmount} | Placed
-                  on: {new Date(order.orderDateTime).toLocaleString()} |
-                  Pharmacy: {order.pharmacyName}
+                  Status:{" "}
+                  {order.status === "OUT_OF_DELIVERY"
+                    ? "OUT OF DELIVERY"
+                    : order.status}{" "}
+                  | Total: ₹{order.totalAmount} | Placed on:{" "}
+                  {new Date(order.orderDateTime).toLocaleString()} | Pharmacy:{" "}
+                  {order.pharmacyName}
                 </Typography>
               </Box>
               <Stack direction="row" spacing={1}>
@@ -251,18 +263,20 @@ const OrderPage = () => {
 
       {/* Modal for confirmation (Cancel/Receive) */}
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <Box sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 400,
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
-          textAlign: "center",
-        }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            textAlign: "center",
+          }}
+        >
           <Typography variant="h6" sx={{ mb: 3 }}>
             {confirmMessage}
           </Typography>
@@ -273,7 +287,11 @@ const OrderPage = () => {
               onClick={handleConfirm}
               disabled={loading}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Yes"}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Yes"
+              )}
             </Button>
             <Button
               variant="outlined"
