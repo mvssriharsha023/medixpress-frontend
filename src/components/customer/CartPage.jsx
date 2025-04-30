@@ -184,7 +184,7 @@ const CartPage = () => {
                   try {
                     await placeOrder();
                     setSnackbar({ open: true, message: "Order placed successfully!", severity: "success" });
-                    navigate("/customer/home");
+                    navigate("/customer/order");
                   } catch (err) {
                     setSnackbar({ open: true, message: "Failed to place order!", severity: "error" });
                   } finally {

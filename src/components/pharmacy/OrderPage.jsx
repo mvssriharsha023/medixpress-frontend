@@ -13,7 +13,6 @@ import {
 import Navbar from "../Navbar";
 import GlobalContext from "../../context/GlobalContext";
 
-// Modal style for order details modal
 const modalStyle = {
   position: "absolute",
   top: "50%",
@@ -28,7 +27,6 @@ const modalStyle = {
   p: 4,
 };
 
-// Modal style for confirmation modal
 const confirmModalStyle = {
   position: "absolute",
   top: "50%",
@@ -43,10 +41,8 @@ const confirmModalStyle = {
 };
 
 const PharmacyOrderPage = () => {
-  // Context hook to access global functions like fetching orders and checking out for delivery
   const { getOrdersByPharmacy, getUserById, getMedicineById, checkOutForDelivery } = useContext(GlobalContext);
 
-  // State variables for managing orders, modals, loading state, etc.
   const [orders, setOrders] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -54,7 +50,6 @@ const PharmacyOrderPage = () => {
   const [orderToConfirm, setOrderToConfirm] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Function to fetch orders and enrich them with user and medicine details
   const fetchInitialData = useCallback(async () => {
     const data = await getOrdersByPharmacy();
     const enrichedOrders = await Promise.all(
@@ -79,58 +74,51 @@ const PharmacyOrderPage = () => {
       })
     );
 
-    // Sort orders by order date in descending order (latest first)
     const sortedOrders = enrichedOrders.sort(
       (a, b) => new Date(b.orderDateTime) - new Date(a.orderDateTime)
     );
 
-    setOrders(sortedOrders);  // Update state with the fetched and sorted orders
+    setOrders(sortedOrders);
   }, [getOrdersByPharmacy, getUserById, getMedicineById]);
 
-  // Fetch orders on component mount
   useEffect(() => {
     fetchInitialData();
   }, [fetchInitialData]);
 
-  // Handle opening of the order details modal
   const handleOpen = (order) => {
     setSelectedOrder(order);
     setOpen(true);
   };
 
-  // Handle closing of the order details modal
   const handleClose = () => {
     setOpen(false);
     setSelectedOrder(null);
   };
 
-  // Handle opening of the checkout confirmation modal
   const handleCheckOutClick = (order) => {
     setOrderToConfirm(order);
     setConfirmOpen(true);
   };
 
-  // Handle confirmation to check out the order for delivery
   const handleConfirmYes = async () => {
     if (orderToConfirm) {
-      setLoading(true);  // Set loading state to true while processing
+      setLoading(true);
       try {
-        await checkOutForDelivery(orderToConfirm.id);  // Check out the order for delivery
+        await checkOutForDelivery(orderToConfirm.id);
         setOrders((prevOrders) =>
           prevOrders.map((o) =>
             o.id === orderToConfirm.id ? { ...o, status: "OUT_OF_DELIVERY" } : o
           )
         );
       } catch (err) {
-        console.error("Error during checkout:", err);  // Log any errors
+        console.error("Error during checkout:", err);
       }
-      setLoading(false);  // Reset loading state
-      setConfirmOpen(false);  // Close the confirmation modal
-      setOrderToConfirm(null);  // Reset order to confirm
+      setLoading(false);
+      setConfirmOpen(false);
+      setOrderToConfirm(null);
     }
   };
 
-  // Handle closing the confirmation modal without checking out
   const handleConfirmNo = () => {
     setConfirmOpen(false);
     setOrderToConfirm(null);
@@ -138,75 +126,74 @@ const PharmacyOrderPage = () => {
 
   return (
     <>
-      {/* Navbar component */}
       <Navbar />
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
           Pharmacy Orders
         </Typography>
 
-        {/* Display orders */}
         <Stack spacing={2}>
-          {orders.map((order) => (
-            <Card key={order.id} sx={{ p: 2, boxShadow: 3 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-                <Box sx={{ flex: "1 1 60%" }}>
-                  {/* Display order details */}
-                  <Typography variant="h6">
-                    Order #{order.id.slice(-4)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Status: {order.status === 'OUT_OF_DELIVERY' ? 'OUT OF DELIVERY' : order.status} | Total: ₹{order.totalAmount} | Placed
-                    on: {new Date(order.orderDateTime).toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    <strong>Customer:</strong> {order.userName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Address:</strong> {order.userAddress}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Phone:</strong> {order.userPhone}
-                  </Typography>
+          {orders.length === 0 ? (
+            <Typography variant="h6" color="text.secondary">
+              No orders.
+            </Typography>
+          ) : (
+            orders.map((order) => (
+              <Card key={order.id} sx={{ p: 2, boxShadow: 3 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+                  <Box sx={{ flex: "1 1 60%" }}>
+                    <Typography variant="h6">
+                      Order #{order.id.slice(-4)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Status: {order.status === 'OUT_OF_DELIVERY' ? 'OUT OF DELIVERY' : order.status} | Total: ₹{order.totalAmount} | Placed
+                      on: {new Date(order.orderDateTime).toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      <strong>Customer:</strong> {order.userName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Address:</strong> {order.userAddress}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Phone:</strong> {order.userPhone}
+                    </Typography>
+                  </Box>
+
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap" }}>
+                    <Button variant="contained" onClick={() => handleOpen(order)}>
+                      View Details
+                    </Button>
+
+                    {order.status === "PLACED" && (
+                      <Button variant="outlined" color="primary" onClick={() => handleCheckOutClick(order)}>
+                        Check Out for Delivery
+                      </Button>
+                    )}
+
+                    {order.status === "OUT_OF_DELIVERY" && (
+                      <Button variant="contained" color="warning">
+                        Out for Delivery
+                      </Button>
+                    )}
+                    {order.status === "CANCELLED" && (
+                      <Button variant="contained" color="error">
+                        Cancelled
+                      </Button>
+                    )}
+                    {order.status === "DELIVERED" && (
+                      <Button variant="contained" color="success">
+                        Delivered
+                      </Button>
+                    )}
+                  </Stack>
                 </Box>
-
-                {/* Action buttons for each order */}
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap" }}>
-                  <Button variant="contained" onClick={() => handleOpen(order)}>
-                    View Details
-                  </Button>
-
-                  {/* Show 'Check Out for Delivery' button for orders in "PLACED" status */}
-                  {order.status === "PLACED" && (
-                    <Button variant="outlined" color="primary" onClick={() => handleCheckOutClick(order)}>
-                      Check Out for Delivery
-                    </Button>
-                  )}
-
-                  {/* Display different buttons based on the order status */}
-                  {order.status === "OUT_OF_DELIVERY" && (
-                    <Button variant="contained" color="warning">
-                      Out for Delivery
-                    </Button>
-                  )}
-                  {order.status === "CANCELLED" && (
-                    <Button variant="contained" color="error">
-                      Cancelled
-                    </Button>
-                  )}
-                  {order.status === "DELIVERED" && (
-                    <Button variant="contained" color="success">
-                      Delivered
-                    </Button>
-                  )}
-                </Stack>
-              </Box>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </Stack>
       </Box>
 
-      {/* Modal for order details */}
       <Modal open={open} onClose={handleClose}>
         <Box sx={modalStyle}>
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
@@ -214,7 +201,6 @@ const PharmacyOrderPage = () => {
           </Typography>
           <Divider sx={{ mb: 2 }} />
 
-          {/* Display items in the selected order */}
           {Array.isArray(selectedOrder?.items) && selectedOrder.items.length > 0 ? (
             selectedOrder.items.map((item) => (
               <Card key={item.id} sx={{ mb: 2, p: 2, backgroundColor: "#f9f9f9", boxShadow: 2 }}>
@@ -238,7 +224,6 @@ const PharmacyOrderPage = () => {
             <Typography>No items found in this order.</Typography>
           )}
 
-          {/* Display the total price of the selected order */}
           {selectedOrder && (
             <Box sx={{ textAlign: "right", mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -247,7 +232,6 @@ const PharmacyOrderPage = () => {
             </Box>
           )}
 
-          {/* Button to close the modal */}
           <Box sx={{ textAlign: "right", mt: 2 }}>
             <Button variant="outlined" onClick={handleClose}>
               Close
@@ -256,7 +240,6 @@ const PharmacyOrderPage = () => {
         </Box>
       </Modal>
 
-      {/* Confirmation Modal for checking out for delivery */}
       <Modal open={confirmOpen} onClose={handleConfirmNo}>
         <Box sx={confirmModalStyle}>
           {loading ? (

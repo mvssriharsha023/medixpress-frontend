@@ -16,7 +16,6 @@ import GlobalContext from "../context/GlobalContext";
 const SignUpForm = ({ onRegistrationSuccess }) => {
   const { registerUser } = React.useContext(GlobalContext);
 
-  // Form data state
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -28,12 +27,12 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
     state: "",
     pinCode: "",
     userType: "CUSTOMER",
+    licenseId: "0", // default for CUSTOMER
   });
 
   const [errors, setErrors] = useState({});
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
-  // Form validation logic
   const validate = () => {
     const newErrors = {};
 
@@ -66,11 +65,14 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
       newErrors.pinCode = "Pin code must be 6 digits";
     }
 
+    if (user.userType === "PHARMACY" && !user.licenseId) {
+      newErrors.licenseId = "License ID is required for pharmacies";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle input field changes
   const handleUserChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({
@@ -80,31 +82,30 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Handle toggle between Customer and Pharmacy
   const handleUserTypeChange = (event, newType) => {
     if (newType !== null) {
+      const mappedType = newType === "Customer" ? "CUSTOMER" : "PHARMACY";
       setUser((prev) => ({
         ...prev,
-        userType: newType === "Customer" ? "CUSTOMER" : "PHARMACY",
+        userType: mappedType,
+        licenseId: mappedType === "CUSTOMER" ? "0" : "", // Reset based on type
       }));
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    // Construct full address string
-    const fullAddress = `${user.addressLine1}, ${user.area}, ${user.city}, ${user.state}, ${user.pinCode}`;
-    const { area, addressLine1, city, state, pinCode, ...finalUser } = {
-      ...user,
+    const { area, addressLine1, city, state, pinCode, ...restUser } = user;
+    const fullAddress = `${addressLine1}, ${area}, ${city}, ${state}, ${pinCode}`;
+    const finalUser = {
+      ...restUser,
       address: fullAddress,
     };
 
     const response = await registerUser(finalUser);
 
-    // Show success message and switch to login
     if (response) {
       setShowSuccessAlert(true);
       setTimeout(() => {
@@ -117,14 +118,12 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
       <Stack spacing={2}>
-        {/* Success message alert */}
         <Collapse in={showSuccessAlert}>
           <Alert severity="success" variant="filled" sx={{ fontSize: "1rem", py: 2 }}>
             Registration successful! Please log in.
           </Alert>
         </Collapse>
 
-        {/* Name and contact number fields */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             fullWidth
@@ -148,7 +147,6 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
-        {/* Email and password fields */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             fullWidth
@@ -174,7 +172,6 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
-        {/* Address line 1 and area */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="Address Line 1"
@@ -200,7 +197,6 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
-        {/* City, state, and pin code */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="City"
@@ -234,7 +230,6 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
-        {/* Toggle button for user type */}
         <Typography variant="subtitle2" sx={{ mt: 1 }}>
           Sign up as
         </Typography>
@@ -260,7 +255,19 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           </ToggleButton>
         </ToggleButtonGroup>
 
-        {/* Submit button */}
+        {user.userType === "PHARMACY" && (
+          <TextField
+            fullWidth
+            label="License ID"
+            variant="outlined"
+            name="licenseId"
+            value={user.licenseId}
+            onChange={handleUserChange}
+            error={!!errors.licenseId}
+            helperText={errors.licenseId}
+          />
+        )}
+
         <Button variant="contained" fullWidth sx={{ borderRadius: 2 }} type="submit">
           Sign Up
         </Button>
