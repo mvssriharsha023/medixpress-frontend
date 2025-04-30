@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import Navbar from "../Navbar";
 import {
   Box,
@@ -37,15 +37,18 @@ const HomePage = () => {
   const role = sessionStorage.getItem("role");
   const token = sessionStorage.getItem("token");
 
-  useEffect(() => {
-    if (!token || role !== "CUSTOMER") {
-      navigate("/");
-    } else {
-      fetchInitialData();
-    }
-  }, []);
+  // Memoize fetchMedicines to avoid unnecessary re-renders
+  const fetchMedicines = useCallback(async () => {
+    const data = await searchMedicines(medicineSearch);
+    setMedicines(data);
+    setMedicineNames([...new Set(data.map((med) => med.name))]);
+    const uniquePharmacies = [...new Set(data.map((med) => med.pharmacyName))];
+    setPharmacyNames(uniquePharmacies);
+    setPharmacyFilter(uniquePharmacies);
+  }, [medicineSearch, searchMedicines]);
 
-  const fetchInitialData = async () => {
+  // Memoize fetchInitialData to avoid unnecessary re-renders
+  const fetchInitialData = useCallback(async () => {
     await fetchMedicines();
     const cartData = await getUserCart();
     const map = {};
@@ -53,22 +56,22 @@ const HomePage = () => {
       map[item.medicineId] = item;
     });
     setCartMap(map);
-  };
+  }, [fetchMedicines, getUserCart]);
 
-  const fetchMedicines = async () => {
-    const data = await searchMedicines(medicineSearch);
-    setMedicines(data);
-    const uniqueNames = [...new Set(data.map((med) => med.name))];
-    const uniquePharmacies = [...new Set(data.map((med) => med.pharmacyName))];
-    setMedicineNames(uniqueNames);
-    setPharmacyNames(uniquePharmacies);
-    setPharmacyFilter(uniquePharmacies); // initially select all
-  };
+  useEffect(() => {
+    // Redirect if not a logged-in customer
+    if (!token || role !== "CUSTOMER") {
+      navigate("/");
+    } else {
+      fetchInitialData();
+    }
+  }, [fetchInitialData, navigate, token, role]);
 
   const handleSearch = () => {
-    if (medicineSearch === "" || medicineSearch === null) {
+    // Fetch all if input is empty
+    if (!medicineSearch) {
       setMedicineSearch("");
-      fetchInitialData(); // still fetches everything
+      fetchInitialData();
     } else {
       fetchMedicines();
     }
@@ -100,11 +103,9 @@ const HomePage = () => {
     }
 
     if (newQty === 0) {
-      setCartMap((prev) => {
-        const updated = { ...prev };
-        delete updated[medicineId];
-        return updated;
-      });
+      const updated = { ...cartMap };
+      delete updated[medicineId];
+      setCartMap(updated);
       removeItemFromCart(cartId);
     } else {
       setCartMap((prev) => ({
@@ -115,7 +116,6 @@ const HomePage = () => {
     }
   };
 
-  // Filter medicines by selected pharmacy names
   const filteredMedicines = medicines.filter((medicine) =>
     pharmacyFilter.includes(medicine.pharmacyName)
   );
@@ -128,13 +128,12 @@ const HomePage = () => {
           Welcome to MediXpress!
         </Typography>
 
+        {/* Search bar */}
         <Stack direction="row" spacing={2} alignItems="center">
           <Autocomplete
             value={medicineSearch}
-            onChange={(event, newValue) => setMedicineSearch(newValue || "")}
-            onInputChange={(event, newInputValue) =>
-              setMedicineSearch(newInputValue)
-            }
+            onChange={(e, val) => setMedicineSearch(val || "")}
+            onInputChange={(e, val) => setMedicineSearch(val)}
             options={medicineNames}
             sx={{ flex: 1 }}
             renderInput={(params) => (
@@ -155,7 +154,7 @@ const HomePage = () => {
           </Button>
         </Stack>
 
-        {/* Pharmacy Filter Dropdown with Select/Deselect All */}
+        {/* Pharmacy filters */}
         <Box sx={{ mt: 3 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
@@ -166,9 +165,7 @@ const HomePage = () => {
               multiple
               options={pharmacyNames}
               value={pharmacyFilter}
-              onChange={(event, newValue) => {
-                setPharmacyFilter(newValue);
-              }}
+              onChange={(e, newValue) => setPharmacyFilter(newValue)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -201,6 +198,7 @@ const HomePage = () => {
           </Stack>
         </Box>
 
+        {/* Medicine cards */}
         <Grid container spacing={3} sx={{ mt: 3 }}>
           {filteredMedicines.length === 0 ? (
             <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
@@ -229,6 +227,8 @@ const HomePage = () => {
                         Distance: {medicine.distance.toFixed(2)} km
                       </Typography>
                     </CardContent>
+
+                    {/* Cart actions */}
                     <Box sx={{ px: 2, pb: 2 }}>
                       {inCart ? (
                         <Stack direction="row" spacing={1} alignItems="center">

@@ -5,6 +5,7 @@ import SignInForm from "./SignInForm";
 import SignUpForm from "./SignUpForm";
 
 const AuthPage = () => {
+  // State to toggle between Sign In and Sign Up forms
   const [isSignIn, setIsSignIn] = useState(true);
 
   return (
@@ -26,6 +27,7 @@ const AuthPage = () => {
         px: 2,
       }}
     >
+      {/* App heading */}
       <Typography
         variant="h3"
         sx={{
@@ -39,6 +41,7 @@ const AuthPage = () => {
         Welcome To MediXpress!
       </Typography>
 
+      {/* Auth form container */}
       <Paper
         elevation={8}
         sx={{
@@ -55,6 +58,7 @@ const AuthPage = () => {
 
         {isSignIn ? (
           <>
+            {/* Render SignIn form */}
             <SignInForm />
             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               Don't have an account?{" "}
@@ -65,7 +69,8 @@ const AuthPage = () => {
           </>
         ) : (
           <>
-            <SignUpForm onRegistrationSuccess={() => setIsSignIn(true)}/>
+            {/* Render SignUp form */}
+            <SignUpForm onRegistrationSuccess={() => setIsSignIn(true)} />
             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               Already have an account?{" "}
               <Link component="button" onClick={() => setIsSignIn(true)}>

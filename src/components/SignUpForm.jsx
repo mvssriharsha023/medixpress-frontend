@@ -16,6 +16,7 @@ import GlobalContext from "../context/GlobalContext";
 const SignUpForm = ({ onRegistrationSuccess }) => {
   const { registerUser } = React.useContext(GlobalContext);
 
+  // Form data state
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -32,6 +33,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
   const [errors, setErrors] = useState({});
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
+  // Form validation logic
   const validate = () => {
     const newErrors = {};
 
@@ -68,6 +70,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle input field changes
   const handleUserChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({
@@ -77,6 +80,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  // Handle toggle between Customer and Pharmacy
   const handleUserTypeChange = (event, newType) => {
     if (newType !== null) {
       setUser((prev) => ({
@@ -86,10 +90,12 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
+    // Construct full address string
     const fullAddress = `${user.addressLine1}, ${user.area}, ${user.city}, ${user.state}, ${user.pinCode}`;
     const { area, addressLine1, city, state, pinCode, ...finalUser } = {
       ...user,
@@ -98,6 +104,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
 
     const response = await registerUser(finalUser);
 
+    // Show success message and switch to login
     if (response) {
       setShowSuccessAlert(true);
       setTimeout(() => {
@@ -110,12 +117,14 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
       <Stack spacing={2}>
+        {/* Success message alert */}
         <Collapse in={showSuccessAlert}>
           <Alert severity="success" variant="filled" sx={{ fontSize: "1rem", py: 2 }}>
             Registration successful! Please log in.
           </Alert>
         </Collapse>
 
+        {/* Name and contact number fields */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             fullWidth
@@ -139,6 +148,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
+        {/* Email and password fields */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             fullWidth
@@ -164,6 +174,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
+        {/* Address line 1 and area */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="Address Line 1"
@@ -189,6 +200,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
+        {/* City, state, and pin code */}
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="City"
@@ -222,6 +234,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           />
         </Box>
 
+        {/* Toggle button for user type */}
         <Typography variant="subtitle2" sx={{ mt: 1 }}>
           Sign up as
         </Typography>
@@ -247,6 +260,7 @@ const SignUpForm = ({ onRegistrationSuccess }) => {
           </ToggleButton>
         </ToggleButtonGroup>
 
+        {/* Submit button */}
         <Button variant="contained" fullWidth sx={{ borderRadius: 2 }} type="submit">
           Sign Up
         </Button>

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import Navbar from "../Navbar";
 import GlobalContext from "../../context/GlobalContext";
 import { useNavigate } from "react-router-dom";
@@ -44,21 +44,23 @@ const InventoryPage = () => {
   const [newPrice, setNewPrice] = useState("");
   const [priceError, setPriceError] = useState("");
 
-  const fetchInitialData = async () => {
+  // Fetch initial data on page load using useCallback
+  const fetchInitialData = useCallback(async () => {
     const user = await getUserByToken(token);
     setUser(user);
     const medicineData = await getMedicinesByPharmacy(user.id);
     setMedicines(medicineData || []);
-  };
+  }, [getUserByToken, getMedicinesByPharmacy, token]);
 
   useEffect(() => {
     if (!token || role !== "PHARMACY") {
-      navigate("/");
+      navigate("/"); // Redirect if not authorized
     } else {
-      fetchInitialData();
+      fetchInitialData(); // Fetch medicines if authorized
     }
-  }, []);
+  }, [fetchInitialData, navigate, role, token]);
 
+  // Modal handling for adding new medicine
   const handleOpenAddMedicineModal = () => {
     setOpenAddMedicineModal(true);
   };
@@ -102,6 +104,7 @@ const InventoryPage = () => {
     }
   };
 
+  // Modal handling for quantity actions (add/reduce)
   const handleOpenQuantityModal = (medicine, type) => {
     setSelectedMedicine(medicine);
     setActionType(type);
@@ -156,6 +159,7 @@ const InventoryPage = () => {
     handleCloseQuantityModal();
   };
 
+  // Modal handling for updating price
   const handleUpdatePriceClick = (medicine) => {
     setSelectedMedicineForPrice(medicine);
     setNewPrice("");
@@ -443,7 +447,6 @@ const InventoryPage = () => {
             )}
           </Box>
         </Modal>
-
       </Box>
     </div>
   );

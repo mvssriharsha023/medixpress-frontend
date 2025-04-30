@@ -1,3 +1,4 @@
+// Importing necessary modules from React and libraries
 import React, { useContext, useEffect, useState } from "react";
 import Navbar from "../Navbar";
 import {
@@ -14,45 +15,59 @@ import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
 import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
 
+// Main HomePage component for pharmacy dashboard
 const HomePage = () => {
+  // Initialize navigation
   const navigate = useNavigate();
+
+  // Destructure necessary global functions from context
   const { getUserByToken, getMedicinesByPharmacy, getOrdersByPharmacy } =
     useContext(GlobalContext);
 
+  // Local state to store user, medicines, and orders
   const [user, setUser] = useState({});
   const [medicines, setMedicines] = useState([]);
   const [orders, setOrders] = useState([]);
+
+  // Get auth details from session storage
   const role = sessionStorage.getItem("role");
   const token = sessionStorage.getItem("token");
 
-  const fetchInitialData = async () => {
-    const user = await getUserByToken(token);
-    setUser(user);
-    const medicineData = await getMedicinesByPharmacy(user.id);
-    setMedicines(medicineData);
-    const orderData = await getOrdersByPharmacy(user.id);
-    setOrders(orderData);
-  };
-
+  // Redirect non-pharmacy users to home page
   useEffect(() => {
+    const fetchInitialData = async () => {
+      const user = await getUserByToken(token);
+      setUser(user);
+
+      const medicineData = await getMedicinesByPharmacy(user.id);
+      setMedicines(medicineData);
+
+      const orderData = await getOrdersByPharmacy(user.id);
+      setOrders(orderData);
+    };
+
     if (!token || role !== "PHARMACY") {
       navigate("/");
     } else {
       fetchInitialData();
     }
-  }, []);
+  }, [navigate, role, token, getUserByToken, getMedicinesByPharmacy, getOrdersByPharmacy]); // Adjusted dependencies
 
+  // Count total delivered orders
   const totalOrdersFulfilled = orders.filter((order) => order.status === "DELIVERED").length;
 
   return (
     <>
+      {/* Top Navigation Bar */}
       <Navbar />
+
+      {/* Main container */}
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" sx={{ mb: 4, fontWeight: 600 }}>
           Welcome to MediXpress!
         </Typography>
 
-        {/* Pharmacy Info Box */}
+        {/* Pharmacy information section */}
         <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 5 }}>
           <Box display="flex" alignItems="center" gap={2} mb={3}>
             <Avatar sx={{ bgcolor: "primary.main", width: 56, height: 56 }}>
@@ -65,7 +80,9 @@ const HomePage = () => {
 
           <Divider sx={{ mb: 3 }} />
 
+          {/* Grid layout for pharmacy details */}
           <Grid container spacing={3}>
+            {/* Email Card */}
             <Grid item xs={12} md={6}>
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent>
@@ -77,6 +94,7 @@ const HomePage = () => {
               </Card>
             </Grid>
 
+            {/* Contact Number Card */}
             <Grid item xs={12} md={6}>
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent>
@@ -88,6 +106,7 @@ const HomePage = () => {
               </Card>
             </Grid>
 
+            {/* Address Card */}
             <Grid item xs={12}>
               <Card variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardContent>
@@ -101,8 +120,9 @@ const HomePage = () => {
           </Grid>
         </Paper>
 
-        {/* Analytics Row */}
+        {/* Analytics Cards Section */}
         <Grid container spacing={4} justifyContent="center">
+          {/* Total Medicines Card */}
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
@@ -115,9 +135,7 @@ const HomePage = () => {
                 alignItems: "center",
                 boxShadow: 3,
                 transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                },
+                "&:hover": { transform: "translateY(-5px)" },
               }}
             >
               <CardContent sx={{ textAlign: "center" }}>
@@ -131,6 +149,7 @@ const HomePage = () => {
             </Card>
           </Grid>
 
+          {/* Total Orders Card */}
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
@@ -143,9 +162,7 @@ const HomePage = () => {
                 alignItems: "center",
                 boxShadow: 3,
                 transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                },
+                "&:hover": { transform: "translateY(-5px)" },
               }}
             >
               <CardContent sx={{ textAlign: "center" }}>
@@ -159,6 +176,7 @@ const HomePage = () => {
             </Card>
           </Grid>
 
+          {/* Low Stock Alerts Card */}
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
@@ -171,9 +189,7 @@ const HomePage = () => {
                 alignItems: "center",
                 boxShadow: 3,
                 transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                },
+                "&:hover": { transform: "translateY(-5px)" },
               }}
             >
               <CardContent sx={{ textAlign: "center" }}>
@@ -187,6 +203,7 @@ const HomePage = () => {
             </Card>
           </Grid>
 
+          {/* Orders Fulfilled Card */}
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
@@ -199,9 +216,7 @@ const HomePage = () => {
                 alignItems: "center",
                 boxShadow: 3,
                 transition: "transform 0.3s",
-                "&:hover": {
-                  transform: "translateY(-5px)",
-                },
+                "&:hover": { transform: "translateY(-5px)" },
               }}
             >
               <CardContent sx={{ textAlign: "center" }}>

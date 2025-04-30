@@ -13,6 +13,7 @@ import {
 import Navbar from "../Navbar";
 import GlobalContext from "../../context/GlobalContext";
 
+// Modal styling for centering and scrolling
 const modalStyle = {
   position: "absolute",
   top: "50%",
@@ -27,7 +28,12 @@ const modalStyle = {
   p: 4,
 };
 
+/**
+ * OrderPage component shows user's order history,
+ * allows viewing details, canceling, and receiving orders.
+ */
 const OrderPage = () => {
+  // Context functions for API interactions
   const {
     getOrderHistory,
     getMedicineById,
@@ -36,60 +42,68 @@ const OrderPage = () => {
     receiveOrder,
   } = useContext(GlobalContext);
 
-  const [orders, setOrders] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState(null);
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [confirmMessage, setConfirmMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Local state management
+  const [orders, setOrders] = useState([]); // Stores all fetched orders
+  const [open, setOpen] = useState(false); // For order details modal
+  const [selectedOrder, setSelectedOrder] = useState(null); // Currently selected order
+  const [confirmOpen, setConfirmOpen] = useState(false); // Confirmation modal toggle
+  const [confirmAction, setConfirmAction] = useState(null); // Action: CANCEL / RECEIVE
+  const [selectedOrderId, setSelectedOrderId] = useState(null); // Order ID for action
+  const [confirmMessage, setConfirmMessage] = useState(""); // Message in confirmation modal
+  const [loading, setLoading] = useState(false); // Button loading indicator
 
+  // Fetch and enrich orders on component mount
   useEffect(() => {
     const fetchOrders = async () => {
-      const data = await getOrderHistory();
+      try {
+        const data = await getOrderHistory();
 
-      const enrichedOrders = (
-        await Promise.all(
-          (Array.isArray(data) ? data : []).map(async (order) => {
-            const pharmacy = await getUserById(order.pharmacyId);
-            const enrichedItems = await Promise.all(
-              order.items.map(async (item) => {
-                const medicine = await getMedicineById(item.medicineId);
-                return {
-                  ...item,
-                  medicineName: medicine?.name || "Unknown",
-                };
-              })
-            );
+        // Enrich each order with pharmacy and medicine names
+        const enrichedOrders = (
+          await Promise.all(
+            (Array.isArray(data) ? data : []).map(async (order) => {
+              const pharmacy = await getUserById(order.pharmacyId);
+              const enrichedItems = await Promise.all(
+                order.items.map(async (item) => {
+                  const medicine = await getMedicineById(item.medicineId);
+                  return {
+                    ...item,
+                    medicineName: medicine?.name || "Unknown",
+                  };
+                })
+              );
 
-            return {
-              ...order,
-              pharmacyName: pharmacy.name,
-              items: enrichedItems,
-            };
-          })
-        )
-      ).sort(
-        (a, b) => new Date(b.orderDateTime) - new Date(a.orderDateTime)
-      );
+              return {
+                ...order,
+                pharmacyName: pharmacy.name,
+                items: enrichedItems,
+              };
+            })
+          )
+        ).sort((a, b) => new Date(b.orderDateTime) - new Date(a.orderDateTime));
 
-      setOrders(enrichedOrders);
+        setOrders(enrichedOrders);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      }
     };
 
     fetchOrders();
-  }, []);
+  }, [getOrderHistory, getMedicineById, getUserById]); // Added missing dependencies
 
+  // Open order details modal
   const handleOpen = (order) => {
     setSelectedOrder(order);
     setOpen(true);
   };
 
+  // Close order details modal
   const handleClose = () => {
     setOpen(false);
     setSelectedOrder(null);
   };
 
+  // Handle cancellation of an order
   const handleCancelOrder = async (orderId) => {
     await cancelOrder(orderId);
     setOrders((prevOrders) =>
@@ -99,6 +113,7 @@ const OrderPage = () => {
     );
   };
 
+  // Handle confirmation that order was received
   const handleReceivedOrder = async (orderId) => {
     await receiveOrder(orderId);
     setOrders((prevOrders) =>
@@ -108,6 +123,7 @@ const OrderPage = () => {
     );
   };
 
+  // Open confirmation modal for Cancel or Receive action
   const openConfirmDialog = (actionType, orderId) => {
     setSelectedOrderId(orderId);
     setConfirmAction(actionType);
@@ -119,6 +135,7 @@ const OrderPage = () => {
     setConfirmOpen(true);
   };
 
+  // Handle confirmed user action from modal
   const handleConfirm = async () => {
     setLoading(true);
     if (confirmAction === "CANCEL") {
@@ -138,6 +155,7 @@ const OrderPage = () => {
           My Orders
         </Typography>
 
+        {/* List of Orders */}
         <Stack spacing={2}>
           {orders.map((order) => (
             <Card
@@ -155,15 +173,13 @@ const OrderPage = () => {
                   Order #{order.id.slice(-4)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Status:{" "}
-                  {order.status === "OUT_OF_DELIVERY"
-                    ? "OUT OF DELIVERY"
-                    : order.status}{" "}
-                  | Total: ₹{order.totalAmount} | Placed on:{" "}
-                  {new Date(order.orderDateTime).toLocaleString()} | Pharmacy:{" "}
-                  {order.pharmacyName}
+                  Status: {order.status === "OUT_OF_DELIVERY" ? "OUT OF DELIVERY" : order.status} |
+                  Total: ₹{order.totalAmount} | Placed on: {new Date(order.orderDateTime).toLocaleString()} |
+                  Pharmacy: {order.pharmacyName}
                 </Typography>
               </Box>
+
+              {/* Action Buttons per Order Status */}
               <Stack direction="row" spacing={1}>
                 <Button variant="contained" onClick={() => handleOpen(order)}>
                   View Details
@@ -206,32 +222,26 @@ const OrderPage = () => {
         </Stack>
       </Box>
 
-      {/* Modal for order details */}
+      {/* Modal to show order item details */}
       <Modal open={open} onClose={handleClose}>
         <Box sx={modalStyle}>
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
             Order Details
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          {Array.isArray(selectedOrder?.items) &&
-          selectedOrder.items.length > 0 ? (
+
+          {/* Each item in selected order */}
+          {Array.isArray(selectedOrder?.items) && selectedOrder.items.length > 0 ? (
             selectedOrder.items.map((item) => (
               <Card
                 key={item.id}
-                sx={{
-                  mb: 2,
-                  p: 2,
-                  backgroundColor: "#f9f9f9",
-                  boxShadow: 2,
-                }}
+                sx={{ mb: 2, p: 2, backgroundColor: "#f9f9f9", boxShadow: 2 }}
               >
                 <CardContent>
                   <Typography variant="h6">
                     Medicine: {item.medicineName}
                   </Typography>
-                  <Typography variant="body1">
-                    Quantity: {item.quantity}
-                  </Typography>
+                  <Typography variant="body1">Quantity: {item.quantity}</Typography>
                   <Typography variant="body1">
                     Price per Unit: ₹{item.pricePerUnit}
                   </Typography>
@@ -245,6 +255,7 @@ const OrderPage = () => {
             <Typography>No items found in this order.</Typography>
           )}
 
+          {/* Order total */}
           {selectedOrder && (
             <Box sx={{ textAlign: "right", mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -261,7 +272,7 @@ const OrderPage = () => {
         </Box>
       </Modal>
 
-      {/* Modal for confirmation (Cancel/Receive) */}
+      {/* Confirmation Modal for Cancel or Receive */}
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <Box
           sx={{
